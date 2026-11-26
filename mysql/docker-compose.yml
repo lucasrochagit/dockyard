@@ -1,0 +1,53 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: mysql-local
+    hostname: mysql
+
+    # 3307 no host porque a 3306 ja e usada pelo mariadb deste repositorio;
+    # assim os dois sobem juntos. Entre containers continua mysql:3306.
+    ports:
+      - "3307:3306"
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+
+    # Parametros reduzidos para uso local de teste (os defaults sao pensados para
+    # servidores maiores). performance_schema desligado economiza ~100MB+ de RAM.
+    # skip-log-bin: o binlog vem ligado no MySQL 8+ e cresce o volume sem uso aqui
+    # (nao ha replicacao nem CDC).
+    command:
+      - --innodb-buffer-pool-size=64M
+      - --max-connections=50
+      - --performance-schema=OFF
+      - --skip-log-bin
+
+    mem_limit: 512m
+    cpus: 1.0
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    # Via TCP (127.0.0.1): durante a inicializacao o servidor temporario roda com
+    # skip-networking, entao so fica healthy quando o servidor definitivo sobe.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    restart: unless-stopped
+
+    networks:
+      - shared_net
+
+volumes:
+  mysql_data:
+
+networks:
+  shared_net:
+    external: true

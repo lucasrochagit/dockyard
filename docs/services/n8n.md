@@ -28,6 +28,7 @@ Use sempre o **nome do host na `shared_net`** e a porta interna, nunca `localhos
 | MongoDB | `mongodb` | 27017 | `admin` / `admin` | `authSource=admin`; veja [mongodb](mongodb.md) |
 | Postgres / Postgres Trigger | `postgres` | 5432 | `postgres` / `postgres` | banco `postgres`, SSL desativado; veja [postgres](postgres.md) |
 | MySQL (serve para MariaDB) | `mariadb` | 3306 | `app` / `app` | banco `app` |
+| MySQL | `mysql` | 3306 | `app` / `app` | banco `app`; veja [mysql](mysql.md) |
 | Redis | `redis` | 6379 | sem usuário/senha | banco `0` |
 | S3 (MinIO) | `http://minio:9000` | 9000 | `admin` / `admin1234` | marcar *Force Path Style*; região qualquer (ex.: `us-east-1`) |
 | Elasticsearch | `http://elasticsearch:9200` | 9200 | sem autenticação | veja a nota abaixo |

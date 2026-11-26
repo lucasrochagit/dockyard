@@ -19,6 +19,7 @@ usando RabbitMQ, MongoDB, Postgres, MinIO etc.).
 | [MinIO (S3)](docs/services/minio.md) | `quay.io/minio/minio` | `minio` | 9000 (API), 9001 (console) | `admin` / `admin1234` | 512 MB / 1.0 |
 | [PostgreSQL](docs/services/postgres.md) | `postgres:17-alpine` | `postgres` | 5432 | `postgres` / `postgres` | 512 MB / 1.0 |
 | [MariaDB](docs/services/mariadb.md) | `mariadb:11.8` | `mariadb` | 3306 | `root`/`root` e `app`/`app` (banco `app`) | 512 MB / 1.0 |
+| [MySQL](docs/services/mysql.md) | `mysql:8.4` | `mysql` | 3307 (→ 3306 no container) | `root`/`root` e `app`/`app` (banco `app`) | 512 MB / 1.0 |
 | [Redis](docs/services/redis.md) | `redis:8-alpine` | `redis` | 6379 | nenhuma | 256 MB / 0.5 |
 
 Cada página de serviço traz como conectar (do host, de outro container e do n8n), os recursos medidos

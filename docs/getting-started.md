@@ -64,9 +64,10 @@ Limites definidos em cada compose (`mem_limit` / `cpus`) e consumo **medido** co
 | MinIO | 512 MB | 1.0 | ~96 MB | |
 | PostgreSQL | 512 MB | 1.0 | ~19 MB | |
 | MariaDB | 512 MB | 1.0 | ~110 MB | |
+| MySQL | 512 MB | 1.0 | não medido | limite estimado, ainda não validado |
 | Redis | 256 MB | 0.5 | ~12 MB | `maxmemory` de 128 MB |
 
-- A soma dos **limites** (sem o n8n) é ~5.8 GB. O consumo real em repouso é bem menor, mas com tudo ligado
+- A soma dos **limites** (sem o n8n) é ~6.3 GB. O consumo real em repouso é bem menor, mas com tudo ligado
   ao mesmo tempo e sob carga você pode encostar na memória da VM do Docker Desktop. **Suba só o que for usar.**
 - Ajuste a memória da VM em Docker Desktop → Settings → Resources. MongoDB Atlas Local + Elasticsearch juntos pedem, na prática, ≥ 4 GB livres.
 - Se um container é morto por falta de memória, ele sai com código **137**. Confirme com
@@ -85,6 +86,7 @@ Limites definidos em cada compose (`mem_limit` / `cpus`) e consumo **medido** co
 | 9000 / 9001 | MinIO (API / console) |
 | 5432 | PostgreSQL |
 | 3306 | MariaDB (conflita com um MySQL local) |
+| 3307 | MySQL (3307 para não conflitar com o MariaDB) |
 | 6379 | Redis (conflita com um Redis local) |
 
 Erro `port is already allocated`: algo na sua máquina já usa a porta. Troque só o lado esquerdo do mapeamento
@@ -95,7 +97,7 @@ Erro `port is already allocated`: algo na sua máquina já usa a porta. Troque s
 Estas configurações são para **máquina de desenvolvimento**:
 
 - Credenciais fixas e triviais estão no próprio repositório. Nunca coloque segredos reais aqui.
-- Elasticsearch e Redis **não têm autenticação**; MinIO, Postgres, MariaDB, MongoDB e RabbitMQ usam senhas óbvias
+- Elasticsearch e Redis **não têm autenticação**; MinIO, Postgres, MariaDB, MySQL, MongoDB e RabbitMQ usam senhas óbvias
   (o `guest` do RabbitMQ foi liberado para conexões fora de `localhost`).
 - As portas são publicadas como `"porta:porta"`, ou seja, **em todas as interfaces do seu computador**: qualquer
   máquina da mesma rede (Wi-Fi do escritório, café) pode alcançá-las. Em redes que você não controla, publique só no
