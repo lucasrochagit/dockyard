@@ -1,0 +1,33 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4.1-management
+    container_name: rabbitmq-local
+
+    hostname: rabbitmq
+
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+    mem_limit: 512m
+    cpus: 1.0
+
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+
+    restart: unless-stopped
+
+    networks:
+      - shared_net
+
+volumes:
+  rabbitmq-data:
+
+networks:
+  shared_net:
+    external: true

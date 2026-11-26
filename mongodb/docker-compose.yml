@@ -1,0 +1,53 @@
+services:
+  mongodb:
+    image: mongodb/mongodb-atlas-local
+    hostname: mongodb
+    container_name: mongodb-search-local
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=admin
+      - MONGODB_INITDB_ROOT_PASSWORD=admin
+      # Logs do mongot (Search) e do runner (processo que integra mongod + mongot)
+      - MONGOT_LOG_FILE=/dev/stderr
+      - RUNNER_LOG_FILE=/dev/stderr
+    ports:
+      - "27017:27017"
+
+    # Minimo oficial para uma instancia local do Atlas (mongod + mongot): 2GB RAM / 2 CPUs.
+    # Abaixo disso o mongot (processo de busca, roda em JVM) tende a sofrer OOM kill
+    # assim que voce cria indices de Search reais (o idle sozinho ja consome ~650MB).
+    mem_limit: 2g
+    cpus: 2.0
+
+    volumes:
+      # Scripts de inicialização (.js ou .sh) rodam automaticamente na primeira subida
+      - ./init:/docker-entrypoint-initdb.d
+      # Dados do MongoDB
+      - db:/data/db
+      # Configuração do replica set local
+      - configdb:/data/configdb
+      # Índices do mongot (Search / Vector Search)
+      - mongot:/data/mongot
+
+    networks:
+      - shared_net
+
+# Exemplo de como outro serviço da sua aplicação (API, n8n custom node, etc.)
+# pode aguardar o banco ficar saudável antes de subir. O healthcheck já vem
+# embutido na imagem mongodb-atlas-local, não é preciso declarar um manualmente:
+#
+#   api:
+#     image: minha-api:latest
+#     networks:
+#       - shared_net
+#     depends_on:
+#       mongodb:
+#         condition: service_healthy
+
+volumes:
+  db:
+  configdb:
+  mongot:
+
+networks:
+  shared_net:
+    external: true

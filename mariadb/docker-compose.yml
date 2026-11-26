@@ -1,0 +1,45 @@
+services:
+  mariadb:
+    image: mariadb:11.8
+    container_name: mariadb-local
+    hostname: mariadb
+
+    ports:
+      - "3306:3306"
+
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: app
+      MARIADB_USER: app
+      MARIADB_PASSWORD: app
+
+    # Parametros reduzidos para uso local de teste (os defaults sao pensados para
+    # servidores maiores). performance_schema desligado economiza ~100MB+ de RAM.
+    command:
+      - --innodb-buffer-pool-size=64M
+      - --max-connections=50
+      - --performance-schema=OFF
+
+    mem_limit: 512m
+    cpus: 1.0
+
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    restart: unless-stopped
+
+    networks:
+      - shared_net
+
+volumes:
+  mariadb_data:
+
+networks:
+  shared_net:
+    external: true

@@ -1,0 +1,59 @@
+services:
+  # O Docker Desktop recria a VM do zero a cada restart, entao nao existe um jeito de
+  # "salvar para sempre" o vm.max_map_count nas configuracoes dele. Este servico reaplica
+  # o valor exigido pelo Elasticsearch (>=262144) toda vez que voce roda `docker compose up`,
+  # entao na pratica voce nunca mais precisa rodar o comando manualmente.
+  sysctl-fix:
+    image: debian:stable-slim
+    container_name: elasticsearch-sysctl-fix
+    privileged: true
+    pid: host
+    command: ["nsenter", "-t", "1", "-m", "-u", "-n", "-i", "sysctl", "-w", "vm.max_map_count=262144"]
+    restart: "no"
+    network_mode: "none"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.2
+    container_name: elasticsearch-local
+    hostname: elasticsearch
+
+    depends_on:
+      sysctl-fix:
+        condition: service_completed_successfully
+
+    environment:
+      # Cluster de 1 no so, sem necessidade de outros nos para formar o cluster
+      - discovery.type=single-node
+
+      # Sem autenticacao nem TLS - uso local, sem credenciais para conectar via REST API
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+
+      # Heap minimo para teste local leve (Xms = Xmx evita realocacao do heap em runtime)
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+
+    # Heap (acima) fica em ~512MB, mas o processo todo (JVM + off-heap do Lucene,
+    # buffers, etc.) ja usa ~860MB so no idle. 1GB de limite deixava so ~15% de folga
+    # (risco real de OOM kill ao indexar/consultar). 1.5GB da uma margem segura sem
+    # deixar o processo tomar recursos demais da maquina.
+    mem_limit: 1.5g
+    cpus: 1.0
+
+    ports:
+      - "9200:9200"
+
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+
+    restart: unless-stopped
+
+    networks:
+      - shared_net
+
+volumes:
+  es-data:
+
+networks:
+  shared_net:
+    external: true

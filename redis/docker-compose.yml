@@ -1,0 +1,44 @@
+services:
+  redis:
+    image: redis:8-alpine
+    container_name: redis-local
+    hostname: redis
+
+    ports:
+      - "6379:6379"
+
+    # Sem senha: uso local de teste. AOF habilita persistencia no volume.
+    # maxmemory evita crescimento sem limite; noeviction retorna erro ao encher
+    # (em vez de apagar chaves silenciosamente, o que quebraria filas/locks).
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - 128mb
+      - --maxmemory-policy
+      - noeviction
+
+    mem_limit: 256m
+    cpus: 0.5
+
+    volumes:
+      - redis_data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    restart: unless-stopped
+
+    networks:
+      - shared_net
+
+volumes:
+  redis_data:
+
+networks:
+  shared_net:
+    external: true
