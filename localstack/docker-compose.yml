@@ -1,0 +1,55 @@
+services:
+  localstack:
+    # 4.14 e a ultima versao Community que sobe sem auth token: a partir da 2026.03
+    # o LocalStack exige conta + LOCALSTACK_AUTH_TOKEN. Versao congelada, sem updates.
+    image: localstack/localstack:4.14
+    container_name: localstack-local
+    hostname: localstack
+
+    # Todos os servicos AWS respondem na mesma porta (edge).
+    ports:
+      - "4566:4566"
+
+    environment:
+      # Liga so os servicos usados; os demais nem carregam (economiza memoria).
+      # sts/iam: AWS CLI, SDKs e Terraform chamam STS (GetCallerIdentity) ao iniciar.
+      SERVICES: s3,sqs,sns,dynamodb,sts,iam
+
+      # Host anunciado nas URLs geradas (ex.: QueueUrl do SQS). O padrao
+      # (localhost.localstack.cloud) aponta para 127.0.0.1, que dentro de outro
+      # container e ele mesmo; "localstack" resolve na shared_net.
+      LOCALSTACK_HOST: localstack:4566
+      # QueueUrl no formato http://localstack:4566/queue/<regiao>/<conta>/<fila>,
+      # sem subdominio (sqs.us-east-1.localstack nao resolve na rede).
+      SQS_ENDPOINT_STRATEGY: path
+
+      # Desliga o envio de telemetria de uso para a LocalStack.
+      DISABLE_EVENTS: "1"
+
+    # Sem Lambda de proposito: ela exigiria montar /var/run/docker.sock
+    # (controle total do Docker da maquina). Veja docs/services/localstack.md.
+
+    mem_limit: 1g
+    cpus: 1.0
+
+    volumes:
+      - localstack_data:/var/lib/localstack
+
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+    restart: unless-stopped
+
+    networks:
+      - shared_net
+
+volumes:
+  localstack_data:
+
+networks:
+  shared_net:
+    external: true

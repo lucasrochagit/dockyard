@@ -30,10 +30,10 @@ Use sempre o **nome do host na `shared_net`** e a porta interna, nunca `localhos
 | MySQL (serve para MariaDB) | `mariadb` | 3306 | `app` / `app` | banco `app` |
 | MySQL | `mysql` | 3306 | `app` / `app` | banco `app`; veja [mysql](mysql.md) |
 | Redis | `redis` | 6379 | sem usuário/senha | banco `0` |
-| S3 (MinIO) | `http://minio:9000` | 9000 | `admin` / `admin1234` | marcar *Force Path Style*; região qualquer (ex.: `us-east-1`) |
+| AWS (S3, SQS, SNS) via LocalStack | `http://localstack:4566` | 4566 | `test` / `test` | região `us-east-1`; ligar *Custom Endpoints*; veja [localstack](localstack.md) |
 | Elasticsearch | `http://elasticsearch:9200` | 9200 | sem autenticação | veja a nota abaixo |
 
-Também dá para usar o node **HTTP Request** contra `http://elasticsearch:9200` ou `http://minio:9000`.
+Também dá para usar o node **HTTP Request** contra `http://elasticsearch:9200`.
 
 ## Limitações e pontos de atenção
 
@@ -48,5 +48,5 @@ Também dá para usar o node **HTTP Request** contra `http://elasticsearch:9200`
 
 ## O que foi e o que não foi validado
 
-- Validado: o container do n8n alcança `rabbitmq:5672`, `mongodb:27017`, `minio:9000` por TCP e tem saída para a internet (DNS e conexões externas), então também conecta em bancos externos (ex.: MongoDB Atlas na nuvem; o IP público da sua máquina precisa estar liberado no firewall do banco).
-- **Não testado dentro do n8n:** os nodes em si (Postgres Trigger, S3, MySQL, Redis, Elasticsearch). Os serviços foram testados com clientes próprios na `shared_net`. O node *Elasticsearch* do n8n pode exigir usuário/senha no cadastro da credencial; como a segurança do Elasticsearch está desativada, o servidor ignora qualquer valor.
+- Validado: o container do n8n alcança `rabbitmq:5672`, `mongodb:27017` por TCP e tem saída para a internet (DNS e conexões externas), então também conecta em bancos externos (ex.: MongoDB Atlas na nuvem; o IP público da sua máquina precisa estar liberado no firewall do banco).
+- **Não testado dentro do n8n:** os nodes em si (Postgres Trigger, MySQL, AWS/LocalStack, Redis, Elasticsearch). Os serviços foram testados com clientes próprios na `shared_net`. O node *Elasticsearch* do n8n pode exigir usuário/senha no cadastro da credencial; como a segurança do Elasticsearch está desativada, o servidor ignora qualquer valor.

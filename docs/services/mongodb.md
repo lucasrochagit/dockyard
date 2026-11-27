@@ -48,6 +48,9 @@ O `healthcheck` já vem embutido na imagem (cobre `mongod` + `mongot`); um servi
 
 ## Limitações e pontos de atenção
 
+- **Não interrompa a primeira subida.** Se o container for parado antes de o replica set ser iniciado, as subidas seguintes não o iniciam:
+  o log mostra `Collection [local.oplog.rs] not found` repetidamente e, após ~2 min, `panic: error checking mongod ... ReplicaSetNoPrimary ... RSGhost`
+  (o container sai com código 2). Correção (apaga os dados): `docker compose down -v` e `docker compose up -d`.
 - **Consumo alto comparado aos outros serviços.** Mínimo oficial: 2 GB de RAM e 2 CPUs livres. Parado, o container usa
   ~380 MB, e sobe para ~660 MB com um índice de Search criado. Com limite menor que 2 GB o `mongot` tende a ser morto por OOM
   quando há índices reais.
@@ -65,4 +68,7 @@ O `healthcheck` já vem embutido na imagem (cobre `mongod` + `mongot`); um servi
 
 - Container `healthy`; login `admin/admin` e escrita de documento funcionando; `createSearchIndex` executado com sucesso;
   conexão do host com `directConnection=true`; n8n alcança `mongodb:27017` por TCP.
-- **Não exercitado:** consultas `$search`/`$vectorSearch` com dados reais e o node MongoDB do n8n.
+- Windows 11 (26/11/2026), após recriar os volumes: replica set `PRIMARY`; 1000 documentos inseridos e lidos; índice de Search `READY`
+  e consulta `$search` retornando os 500 documentos esperados; banco de teste removido. Login pelo host (`host.docker.internal:27017`).
+  Memória: ~656 MB parado, ~810 MB após criar o índice de Search (40% do limite).
+- **Não exercitado:** `$vectorSearch` e o node MongoDB do n8n.

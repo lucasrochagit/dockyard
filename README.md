@@ -3,7 +3,7 @@
 Coleção de `docker-compose` prontos para **testes e desenvolvimento local**. Cada serviço fica em
 uma pasta própria, usa o mínimo de recursos que ainda permite funcionamento pleno e entra na mesma
 rede Docker (`shared_net`), para que os serviços conversem entre si (por exemplo, fluxos do n8n
-usando RabbitMQ, MongoDB, Postgres, MinIO etc.).
+usando RabbitMQ, MongoDB, Postgres, LocalStack etc.).
 
 > **Uso exclusivo local.** Credenciais triviais (`admin/admin`, `guest/guest`...), alguns serviços sem
 > autenticação e portas publicadas em todas as interfaces. Não exponha na internet nem use em produção.
@@ -16,10 +16,10 @@ usando RabbitMQ, MongoDB, Postgres, MinIO etc.).
 | [RabbitMQ](docs/services/rabbitmq.md) | `rabbitmq:4.1-management` | `rabbitmq` | 5672 (AMQP), 15672 (UI) | `guest` / `guest` | 512 MB / 1.0 |
 | [MongoDB + Atlas Search](docs/services/mongodb.md) | `mongodb/mongodb-atlas-local` | `mongodb` | 27017 | `admin` / `admin` | 2 GB / 2.0 |
 | [Elasticsearch](docs/services/elasticsearch.md) | `docker.elastic.co/elasticsearch/elasticsearch:9.5.2` | `elasticsearch` | 9200 | nenhuma | 1.5 GB / 1.0 |
-| [MinIO (S3)](docs/services/minio.md) | `quay.io/minio/minio` | `minio` | 9000 (API), 9001 (console) | `admin` / `admin1234` | 512 MB / 1.0 |
 | [PostgreSQL](docs/services/postgres.md) | `postgres:17-alpine` | `postgres` | 5432 | `postgres` / `postgres` | 512 MB / 1.0 |
 | [MariaDB](docs/services/mariadb.md) | `mariadb:11.8` | `mariadb` | 3306 | `root`/`root` e `app`/`app` (banco `app`) | 512 MB / 1.0 |
 | [MySQL](docs/services/mysql.md) | `mysql:8.4` | `mysql` | 3307 (→ 3306 no container) | `root`/`root` e `app`/`app` (banco `app`) | 512 MB / 1.0 |
+| [LocalStack (AWS)](docs/services/localstack.md) | `localstack/localstack:4.14` | `localstack` | 4566 | qualquer (`test`/`test`), região `us-east-1` | 1 GB / 1.0 |
 | [Redis](docs/services/redis.md) | `redis:8-alpine` | `redis` | 6379 | nenhuma | 256 MB / 0.5 |
 
 Cada página de serviço traz como conectar (do host, de outro container e do n8n), os recursos medidos
@@ -66,6 +66,10 @@ dockyard/
 
 ## Validado em
 
-macOS com Docker Desktop (VM com ~7.75 GB de RAM). Em Linux nativo ou Windows o conjunto deve funcionar,
-mas **não foi testado**; os pontos que dependem da plataforma estão sinalizados nas páginas dos serviços
-(em especial o Elasticsearch).
+- macOS com Docker Desktop (VM com ~7.75 GB de RAM).
+- Windows 11 com Docker Desktop + WSL 2 (VM com ~16 GB, 6 CPUs), em 26/11/2026: todos os serviços passaram nos testes de
+  escrita/leitura, depois de recriar os volumes de MySQL, MariaDB e MongoDB, cuja primeira inicialização tinha sido interrompida
+  (veja "Primeira subida interrompida" em [docs/getting-started.md](docs/getting-started.md)).
+
+Em Linux nativo o conjunto deve funcionar, mas **não foi testado**; os pontos que dependem da plataforma estão sinalizados nas
+páginas dos serviços (em especial o Elasticsearch).

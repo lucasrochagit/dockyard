@@ -36,6 +36,8 @@ Por isso o compose tem um segundo serviço, `sysctl-fix`: um container `privileg
 `nsenter -t 1 ... sysctl -w vm.max_map_count=262144` e termina. O Elasticsearch só inicia depois dele
 (`depends_on: service_completed_successfully`), então o ajuste é reaplicado em todo `docker compose up`.
 
+- No **Windows (Docker Desktop + WSL 2)** o ajuste foi validado: `sysctl-fix` sai com código 0 e o Elasticsearch sobe `green`.
+  Nessa máquina o consumo ficou em ~990 MB (64% do limite), acima dos ~850 MB medidos no macOS.
 - Em **Linux nativo**, esse container altera o `vm.max_map_count` do **kernel do próprio host** (até o próximo reboot).
   Isso não foi testado aqui; se preferir, configure em `/etc/sysctl.d/` e remova o serviço auxiliar.
 - Exige `privileged: true`. É uma escolha consciente para ambiente local; não replique em outros contextos.

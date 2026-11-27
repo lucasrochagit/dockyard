@@ -25,7 +25,8 @@ No n8n, credencial RabbitMQ: host `rabbitmq`, porta `5672`, usuário/senha `gues
 
 | Parâmetro | Valor | Efeito |
 |---|---|---|
-| `vm_memory_high_watermark.relative` | `0.4` | Alarme de memória a 40% do limite do container (~200 MB com 512 MB); acima disso o broker bloqueia publicadores |
+| `total_memory_available_override_value` | `512MiB` | Memória total que o RabbitMQ considera. **Necessário:** ele não lê o `mem_limit` do container e usaria a RAM da VM inteira (com 16 GB, alarme em ~6.4 GB; o container seria morto por OOM em 512 MB antes). Mantenha igual ao `mem_limit` |
+| `vm_memory_high_watermark.relative` | `0.4` | Alarme de memória a 40% do total acima (~204 MB); acima disso o broker bloqueia publicadores. Confira no log: `Memory high watermark set to 204 MiB ... of 512 MiB` |
 | `disk_free_limit.absolute` | `500MB` | Alarme de disco: bloqueia publicadores se o espaço livre cair abaixo disso |
 | `listeners.tcp.default` / `management.tcp.port` | `5672` / `15672` | Portas padrão |
 | `loopback_users.guest` | `false` | Permite o login de `guest` vindo de fora de `localhost` |

@@ -29,6 +29,10 @@ Isso só afeta o acesso **do host**: entre containers da `shared_net` o endereç
 
 ## Limitações e pontos de atenção
 
+- **Não interrompa a primeira subida.** Se o container for parado (ou o Docker Desktop fechado) enquanto o MySQL cria os arquivos, o volume fica incompleto
+  e o container entra em loop de reinício com `Cannot create redo log files because data files are corrupt or the database was not shut down cleanly`.
+  O script de entrada vê a pasta de dados e pula a inicialização. Correção (apaga os dados): `docker compose down -v` e `docker compose up -d`.
+  Aconteceu de fato neste repositório.
 - **`MYSQL_*` só valem na primeira inicialização** (volume vazio). Para trocar senhas depois, use SQL (`ALTER USER`) ou `docker compose down -v` (apaga os dados).
 - **`root` aceita conexões de qualquer host** (padrão da imagem oficial quando `MYSQL_ROOT_HOST` não é definido). Aceitável aqui por ser ambiente local.
 - **Autenticação `caching_sha2_password`** (padrão do MySQL 8.4; o plugin `mysql_native_password` vem desativado). Clientes e drivers
@@ -43,15 +47,9 @@ Isso só afeta o acesso **do host**: entre containers da `shared_net` o endereç
 
 ## Validação realizada
 
-- **Nada foi executado ainda.** O compose foi escrito em uma máquina sem Docker, seguindo o padrão do `mariadb/`.
-- **Não testado:** `docker compose config -q`, subida até `healthy`, entrada na `shared_net`, login/escrita/leitura de outro container e do host,
-  consumo de memória (o `mem_limit` de 512 MB é uma estimativa e precisa ser medido) e o node MySQL do n8n.
-
-Para validar:
-
-```bash
-cd mysql && docker compose up -d
-docker inspect --format='{{.State.Health.Status}}' mysql-local
-docker run --rm --network shared_net mysql:8.4 mysql -h mysql -uapp -papp app -e "CREATE TABLE t (id INT); INSERT INTO t VALUES (1); SELECT * FROM t; DROP TABLE t;"
-docker stats --no-stream mysql-local
-```
+- `docker compose config -q` sem erros; container `healthy` e na `shared_net`; primeira inicialização completa em ~10 s.
+- De um container cliente separado na `shared_net`: login como `app` (criar tabela, inserir 50 mil linhas, ler, remover) e como `root`
+  (`SELECT VERSION()` → 8.4.13; conferidos `innodb_buffer_pool_size` = 64 MB, `max_connections` = 50, `performance_schema` e `log_bin` desligados).
+- Pela porta publicada `3307` (via `host.docker.internal`): login como `app`.
+- Memória: ~186 MB em repouso, ~194 MB após inserir 50 mil linhas (38% do limite); `OOMKilled=false`.
+- **Não testado:** o node MySQL do n8n e clientes gráficos no host (Workbench, DBeaver).
